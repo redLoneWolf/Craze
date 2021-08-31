@@ -1,0 +1,3 @@
+rootProject.name = "Craze"
+include ':app'
+include ':OpenCVLib452'

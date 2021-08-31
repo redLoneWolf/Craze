@@ -1,0 +1,8 @@
+<resources>
+    <string name="app_name">Craze</string>
+    <string name="host">Hostname/IP</string>
+    <string name="port">Port</string>
+    <string name="usb_device">No USB Device</string>
+    <string name="connect_usb">Connect USB</string>
+    <string name="connectserver">Connect Server</string>
+</resources>
