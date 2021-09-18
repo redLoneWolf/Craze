@@ -90,13 +90,14 @@ public class USB {
                 try {
                     serialInputOutputManager.stop();
                     usbSerialPort.close();
-
+                    connection.close();
+                    
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
 
             }
-            connection.close();
+
 
         }
     }

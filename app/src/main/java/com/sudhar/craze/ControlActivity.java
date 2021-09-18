@@ -112,7 +112,7 @@ public class ControlActivity extends org.opencv.android.CameraActivity {
     private Estimator estimator;
     private static final String MODEL_PATH = "nyu.tflite";
     private static final boolean QUANT = false;
-    private boolean loaded = false;
+    private boolean modelLoaded = false;
 
 
     @Override
@@ -127,6 +127,7 @@ public class ControlActivity extends org.opencv.android.CameraActivity {
         super.onCreate(savedInstanceState);
         requestWindowFeature(Window.FEATURE_NO_TITLE);
         this.getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
+        this.getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
 
         setContentView(R.layout.activity_control);
 
@@ -139,7 +140,7 @@ public class ControlActivity extends org.opencv.android.CameraActivity {
         mUsbManager = (UsbManager) getSystemService(Context.USB_SERVICE);
 
 
-        initTensorFlowAndLoadModel();
+//        initTensorFlowAndLoadModel();
         usbConnection();
 
 
@@ -279,9 +280,11 @@ public class ControlActivity extends org.opencv.android.CameraActivity {
                             MODEL_PATH,
                             QUANT);
 
-                    loaded = true;
+                    modelLoaded = true;
+                    startDepth();
+
                 } catch (final Exception e) {
-                    loaded = false;
+                    modelLoaded = false;
                     throw new RuntimeException("Error initializing TensorFlow!", e);
                 }
             }
@@ -326,10 +329,7 @@ public class ControlActivity extends org.opencv.android.CameraActivity {
         public Mat onCameraFrame(final CameraBridgeViewBase.CvCameraViewFrame inputFrame) {
 
             rgb = inputFrame.rgba();
-            Imgproc.cvtColor(rgb, Temp, Imgproc.COLOR_BGR2RGB);
             resize(rgb, F640X480, frameSize);
-
-
             Point centerPoint = new Point(rgb.cols() / 2, rgb.rows() / 2);
 
 
@@ -337,6 +337,8 @@ public class ControlActivity extends org.opencv.android.CameraActivity {
                 resize(rgb, toSend, sendingSize);
                 Imgproc.cvtColor(toSend, Temp, Imgproc.COLOR_BGR2RGB);
                 boundService.setRgb(Temp);
+                toSend.release();
+//                Temp.release();
 
 //                boundService.sendRGBFrame(toSend);
 
@@ -356,6 +358,7 @@ public class ControlActivity extends org.opencv.android.CameraActivity {
                 case LoaderCallbackInterface.SUCCESS: {
                     Log.i(TAG, "OpenCV loaded successfully");
                     mOpenCvCameraView.enableView();
+                    Converters.init();
 
                 }
                 break;
@@ -466,13 +469,14 @@ public class ControlActivity extends org.opencv.android.CameraActivity {
                     boundService.disconnectCamFeed();
                     break;
                 case START_DEPTH_CAM_FEED:
+                    initTensorFlowAndLoadModel();
                     boundService.connectDepthFeed();
-                    startDepth();
                     break;
 
                 case STOP_DEPTH_CAM_FEED:
                     boundService.disconnectDepthFeed();
                     stopDepth();
+                    estimator.close();
                     break;
 
 

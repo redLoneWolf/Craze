@@ -69,7 +69,9 @@ public class MainActivity extends org.opencv.android.CameraActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         requestWindowFeature(Window.FEATURE_NO_TITLE);
+
         this.getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
+        this.getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
 
         setContentView(R.layout.activity_main);
 
@@ -312,12 +314,18 @@ public class MainActivity extends org.opencv.android.CameraActivity {
 
         availableDrivers = UsbSerialProber.getDefaultProber().findAllDrivers(mUsbManager);
 
-        if (availableDrivers.size() > 0) {
-            UsbDevice device = availableDrivers.get(0).getDevice();
-            etUsb.setText(device.getProductName());
-        } else {
-            etUsb.setText("No USB Attached");
-        }
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                if (availableDrivers.size() > 0) {
+                    UsbDevice device = availableDrivers.get(0).getDevice();
+                    etUsb.setText(device.getProductName());
+                } else {
+                    etUsb.setText("No USB Attached");
+                }
+            }
+        });
+
     }
 
     @Override

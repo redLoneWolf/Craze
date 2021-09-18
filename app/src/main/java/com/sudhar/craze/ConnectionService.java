@@ -109,10 +109,11 @@ public class ConnectionService extends Service {
         @Override
         public void run() {
 
-            if (rgb != null) {
+            if (rgb != null && !rgb.empty()) {
                 sendRGBFrame(rgb);
+
             }
-            rgbCamFeedHandler.postDelayed(this, RGB_DELAY);
+            rgbCamFeedHandler.postDelayed(RGBrunnable, RGB_DELAY);
 
 
         }

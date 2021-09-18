@@ -21,6 +21,13 @@ public class Converters {
     public static void setQuality(int quality) {
         Converters.quality = quality;
     }
+    static MatOfByte matOfByte;
+    static  MatOfInt matOfInt;
+
+    public static void init(){
+       matOfByte = new MatOfByte();
+       matOfInt = new  MatOfInt(Imgcodecs.IMWRITE_JPEG_QUALITY, quality);
+    }
 
     static float[] getRandomFloat(int size) {
         float[] randomFloats = new float[size];
@@ -236,15 +243,16 @@ public class Converters {
 
 
     public static byte[] CVMatToPacket(Mat mat) {
-        MatOfByte matOfByte = new MatOfByte();
-        Imgcodecs.imencode(".jpg", mat, matOfByte, new MatOfInt(Imgcodecs.IMWRITE_JPEG_QUALITY, quality));
+        Imgcodecs.imencode(".jpg", mat, matOfByte, matOfInt);
         int size = matOfByte.toArray().length;
         ByteBuffer byteBuffer = ByteBuffer.allocate(size + 4 + 1);
         byteBuffer.put((byte) '$');
         byteBuffer.putInt(size);
         byteBuffer.put(matOfByte.toArray());
-
-        return byteBuffer.array();
+        byte[] packet  = byteBuffer.array();
+        byteBuffer.clear();
+        mat.release();
+        return packet;
     }
 
     public static byte[] get0To255FromInt(int[] ints) {
